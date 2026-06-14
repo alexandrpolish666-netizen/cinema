@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Кинотеатр MOON — Выбор VIP мест</title>
+    <!-- Подключаем официальную библиотеку Telegram Web App -->
+    <script src="https://telegram.org"></script>
+    <style>
+        body {
+            background-color: #0b0c10;
+            color: #ffffff;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+        }
+        h3 { color: #00ffcc; margin-top: 10px; margin-bottom: 5px; }
+        .subtitle { color: #777; font-size: 13px; margin-bottom: 25px; }
+        
+        /* Светящаяся полоса экрана */
+        .screen {
+            width: 85%;
+            height: 6px;
+            background: #00ffcc;
+            margin: 20px auto;
+            border-radius: 50%;
+            box-shadow: 0px 0px 15px 4px rgba(0, 255, 204, 0.6);
+        }
+        .screen-label { font-size: 11px; color: #555; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 30px; }
+
+        /* Сетка зала */
+        .hall {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            max-width: 320px;
+            margin: 0 auto 30px auto;
+        }
+
+        /* Дизайн VIP кресел */
+        .seat {
+            padding: 14px 10px;
+            background: #1f2833;
+            border: 2px solid #45f3ff;
+            border-radius: 10px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+        
+        /* Стиль для занятых кем-то мест */
+        .seat.busy {
+            background: #2b2b2b;
+            border-color: #444;
+            color: #666;
+            cursor: not-allowed;
+        }
+
+        /* Стиль при выборе места девушкой */
+        .seat.selected {
+            background: #ea00d9;
+            border-color: #ea00d9;
+            color: #fff;
+            font-weight: bold;
+            box-shadow: 0 0 12px #ea00d9;
+        }
+
+        /* Большая розовая кнопка отправки */
+        .btn-confirm {
+            background: #00ffcc;
+            color: #0b0c10;
+            border: none;
+            padding: 15px 35px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 30px;
+            cursor: pointer;
+            box-shadow: 0px 0px 15px rgba(0, 255, 204, 0.4);
+            display: none; /* Прячем, пока ничего не выбрано */
+            margin: 20px auto;
+            width: 85%;
+            max-width: 280px;
+            transition: 0.3s;
+        }
+    </style>
+</head>
+<body>
+
+    <h3>🍿 Кинопространство MOON</h3>
+    <div class="subtitle">Dana Mall | VIP-зал | Человек-Паук</div>
+
+    <div class="screen"></div>
+    <div class="screen-label">ЭКРАН Кинотеатра</div>
+
+    <p style="color: #45f3ff; font-weight: bold; font-size: 15px;">Выбери нам места (можно несколько):</p>
+
+    <!-- Сюда скрипт вставит кресла -->
+    <div class="hall" id="hallGrid"></div>
+
+    <!-- Кнопка сохранения выбора -->
+    <button class="btn-confirm" id="confirmButton" onclick="sendSeatsToBot()">Подтвердить выбор мест 🎬</button>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.expand(); // Открываем шторку WebApp на весь экран телефона
+
+        let selectedArray = [];
+
+        // Демо-набор мест (Они заменятся на реальные, когда ты настроишь Шаг 6)
+        const demoData = [
+            { row: 3, seat: 1, free: true }, { row: 3, seat: 2, free: true },
+            { row: 3, seat: 3, free: false }, { row: 3, seat: 4, free: false },
+            { row: 4, seat: 1, free: true }, { row: 4, seat: 2, free: true },
+            { row: 4, seat: 3, free: true }, { row: 4, seat: 4, free: true }
+        ];
+
+        const grid = document.getElementById('hallGrid');
+        const confirmBtn = document.getElementById('confirmButton');
+
+        // Отрисовка кресел на экране
+        demoData.forEach(item => {
+            const block = document.createElement('div');
+            block.className = 'seat' + (item.free ? '' : ' busy');
+            block.innerText = `Р${item.row} М${item.seat}`;
+            
+            if (item.free) {
+                block.onclick = () => {
+                    const name = `Ряд ${item.row} Место ${item.seat}`;
+                    
+                    if (block.classList.contains('selected')) {
+                        // Если уже кликала — отменяем выделение
+                        block.classList.remove('selected');
+                        selectedArray = selectedArray.filter(x => x !== name);
+                    } else {
+                        // Если пустое — выделяем розовым
+                        block.classList.add('selected');
+                        selectedArray.push(name);
+                    }
+
+                    // Показываем кнопку, если выбрано хотя бы 1 место
+                    confirmBtn.style.display = selectedArray.length > 0 ? 'block' : 'none';
+                };
+            }
+            grid.appendChild(block);
+        });
+
+        // Функция отправки массива данных обратно в чат бота
+        function sendSeatsToBot() {
+            if (selectedArray.length > 0) {
+                // Склеиваем массив в красивую строку: "Ряд 3 Место 1, Ряд 3 Место 2"
+                const resultString = selectedArray.join(', ');
+                tg.sendData(resultString); 
+                tg.close(); // Закрываем Web App
+            }
+        }
+    </script>
+</body>
+</html>
