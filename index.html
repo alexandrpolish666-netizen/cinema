@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Кинотеатр MOON — Выбор VIP мест</title>
+    <title>Кинотеатр MOON — Приглашение</title>
     <script src="https://telegram.org"></script>
     <style>
         body {
@@ -13,11 +13,46 @@
             text-align: center;
             margin: 0;
             padding: 20px;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
         }
-        h3 { color: #00ffcc; margin-top: 10px; margin-bottom: 5px; }
-        .subtitle { color: #777; font-size: 13px; margin-bottom: 25px; }
+
+        /* ЭКРАН 1: Приглашение со свиданием */
+        #inviteScreen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+        }
+        h2 { color: #00ffcc; margin-bottom: 10px; font-size: 24px; }
+        .gif-container img { width: 150px; height: 150px; margin-bottom: 20px; border-radius: 10px; }
+        .btn-group { position: relative; width: 100%; height: 150px; margin-top: 20px; }
         
-        .screen {
+        .btn-main {
+            padding: 15px 40px;
+            font-size: 18px;
+            font-weight: bold;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            position: absolute;
+            transition: transform 0.1s ease;
+        }
+        #yesBtn { background: #00ffcc; color: #0b0c10; left: 15%; box-shadow: 0 0 15px #00ffcc; }
+        #noBtn { background: #ea00d9; color: #fff; right: 15%; box-shadow: 0 0 15px #ea00d9; z-index: 10; }
+
+        /* ЭКРАН 2: Выбор мест (скрыт по умолчанию) */
+        #hallScreen {
+            display: none;
+            width: 100%;
+        }
+        .screen-line {
             width: 85%;
             height: 6px;
             background: #00ffcc;
@@ -25,173 +60,163 @@
             border-radius: 50%;
             box-shadow: 0px 0px 15px 4px rgba(0, 255, 204, 0.6);
         }
-        .screen-label { font-size: 11px; color: #555; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 30px; }
-
-        /* Контейнер для рядов зала */
-        .hall-container {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            max-width: 500px;
-            margin: 0 auto 30px auto;
-            padding: 10px;
-        }
-
-        /* Один горизонтальный ряд */
-        .row-line {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .row-number {
-            font-size: 11px;
-            color: #555;
-            width: 20px;
-            text-align: right;
-        }
-
-        /* Динамическое VIP кресло */
-        .seat {
-            padding: 10px 12px;
-            background: #1f2833;
-            border: 2px solid #45f3ff;
-            border-radius: 8px;
-            font-size: 11px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            user-select: none;
-            min-width: 35px;
-        }
+        .screen-label { font-size: 11px; color: #555; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 25px; }
+        .hall-container { display: flex; flex-direction: column; gap: 12px; max-width: 500px; margin: 0 auto 30px auto; }
+        .row-line { display: flex; justify-content: center; align-items: center; gap: 10px; }
+        .row-number { font-size: 11px; color: #555; width: 20px; text-align: right; }
         
-        .seat.busy {
-            background: #2b2b2b;
-            border-color: #444;
-            color: #666;
-            cursor: not-allowed;
+        .seat {
+            padding: 10px 12px; background: #1f2833; border: 2px solid #45f3ff; border-radius: 8px;
+            font-size: 11px; cursor: pointer; transition: all 0.2s ease; user-select: none; min-width: 35px;
         }
-
-        .seat.selected {
-            background: #ea00d9;
-            border-color: #ea00d9;
-            color: #fff;
-            font-weight: bold;
-            box-shadow: 0 0 12px #ea00d9;
-        }
-
-        .btn-confirm {
-            background: #00ffcc;
-            color: #0b0c10;
-            border: none;
-            padding: 15px 35px;
-            font-size: 16px;
-            font-weight: bold;
-            border-radius: 30px;
-            cursor: pointer;
-            box-shadow: 0px 0px 15px rgba(0, 255, 204, 0.4);
-            display: none;
-            margin: 20px auto;
-            width: 85%;
-            max-width: 280px;
-            transition: 0.3s;
+        .seat.busy { background: #2b2b2b; border-color: #444; color: #666; cursor: not-allowed; }
+        .seat.selected { background: #ea00d9; border-color: #ea00d9; color: #fff; font-weight: bold; box-shadow: 0 0 12px #ea00d9; }
+        
+        #confirmButton {
+            background: #00ffcc; color: #0b0c10; border: none; padding: 15px 35px; font-size: 16px;
+            font-weight: bold; border-radius: 30px; cursor: pointer; box-shadow: 0px 0px 15px rgba(0, 255, 204, 0.4);
+            display: none; margin: 20px auto; width: 85%; max-width: 280px;
         }
     </style>
 </head>
 <body>
 
-    <h3>🍿 Кинопространство MOON</h3>
-    <div class="subtitle">Dana Mall | Зал 7 VIP | Человек-Паук</div>
+    <!-- ================= СТАРТОВЫЙ ЭКРАН С ЛОВУШКОЙ ================= -->
+    <div id="inviteScreen">
+        <div class="gif-container">
+            <!-- Милая стартовая гифка -->
+            <img id="inviteGif" src="https://giphy.com" alt="cute">
+        </div>
+        <h2>Пойдёшь со мной в кино? 🕷️❤️</h2>
+        <p style="color: #777; font-size: 14px; margin: 0 20px;">В конце июля, на нового Человека-Паука в VIP-зал MOON в Dana Mall!</p>
+        
+        <div class="btn-group">
+            <button class="btn-main" id="yesBtn" onclick="openHall()">Да! 🥰</button>
+            <button class="btn-main" id="noBtn">Нет 😢</button>
+        </div>
+    </div>
 
-    <div class="screen"></div>
-    <div class="screen-label">ЭКРАН Кинотеатра</div>
+    <!-- ================= ЭКРАН ВЫБОРА МЕСТ (ОТКРЫВАЕТСЯ ПОСЛЕ "ДА") ================= -->
+    <div id="hallScreen">
+        <h3>🍿 Выбери нам места:</h3>
+        <div class="screen-line"></div>
+        <div class="screen-label">ЭКРАН Кинотеатра</div>
 
-    <p style="color: #45f3ff; font-weight: bold; font-size: 15px;">Выбери нам места:</p>
-
-    <!-- Сюда скрипт вставит ряды с креслами любой конфигурации -->
-    <div class="hall-container" id="dynamicHall"></div>
-
-    <button class="btn-confirm" id="confirmButton" onclick="sendSeatsToBot()">Подтвердить выбор мест 🎬</button>
+        <div class="hall-container" id="dynamicHall"></div>
+        <button id="confirmButton" onclick="sendSeatsToBot()">Подтвердить выбор мест 🎬</button>
+    </div>
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
 
+        const noBtn = document.getElementById('noBtn');
+        const inviteScreen = document.getElementById('inviteScreen');
+        const hallScreen = document.getElementById('hallScreen');
+        const inviteGif = document.getElementById('inviteGif');
+
+        // 🔥 ЛОГИКА УБЕГАЮЩЕЙ КНОПКИ "НЕТ"
+        // Срабатывает и при наведении мышки (ПК), и при касании (смартфон)
+        const moveNoButton = () => {
+            // Меняем гифку на грустную при попытке нажать "Нет"
+            inviteGif.src = "https://giphy.com";
+            
+            // Расчет случайных координат в пределах видимого экрана
+            const x = Math.random() * (window.innerWidth - noBtn.offsetWidth - 40) + 20;
+            const y = Math.random() * (window.innerHeight - noBtn.offsetHeight - 150) + 50;
+            
+            noBtn.style.position = 'absolute';
+            noBtn.style.left = x + 'px';
+            noBtn.style.top = y + 'px';
+        };
+
+        noBtn.addEventListener('mouseenter', moveNoButton);
+        noBtn.addEventListener('touchstart', moveNoButton);
+
+        // 🎉 ПЕРЕХОД К ВЫБОРУ МЕСТ ПРИ НАЖАТИИ "ДА"
+        function openHall() {
+            inviteScreen.style.display = 'none';
+            hallScreen.style.display = 'block';
+            renderHall(); // Запускаем отрисовку зала
+        }
+
+        // КНОПКИ ЗАЛА (ПОЛНОСТЬЮ ДИНАМИЧЕСКИЕ)
         let selectedArray = [];
         const container = document.getElementById('dynamicHall');
         const confirmBtn = document.getElementById('confirmButton');
 
-        // Получаем JSON-строку от нашего Telegram-бота
-        // Если бот еще не запущен, скрипт возьмет базовый пример
-        let rawData = tg.initDataUnsafe.start_param; 
-        let parsedSeats = [];
+        function renderHall() {
+            let rawData = tg.initDataUnsafe.start_param; 
+            let parsedSeats = [];
 
-        if (rawData) {
-            try {
-                // Декодируем и парсим пришедшие от бота данные
-                parsedSeats = JSON.parse(decodeURIComponent(rawData));
-            } catch(e) {
-                console.error("Ошибка парсинга данных сеанса", e);
-            }
-        }
-
-        // Если данных нет, генерируем базовую схему
-        if (parsedSeats.length === 0) {
-            parsedSeats = [
-                { row: 1, seat: 1, free: true }, { row: 1, seat: 2, free: true }, { row: 1, seat: 3, free: true }, { row: 1, seat: 4, free: true },
-                { row: 2, seat: 1, free: true }, { row: 2, seat: 2, free: false }, { row: 2, seat: 3, free: false }, { row: 2, seat: 4, free: true },
-                { row: 3, seat: 1, free: true }, { row: 3, seat: 2, free: true }, { row: 3, seat: 3, free: true }, { row: 3, seat: 4, free: true }
-            ];
-        }
-
-        // Группируем сиденья по рядам
-        const rowsMap = {};
-        parsedSeats.forEach(item => {
-            if (!rowsMap[item.row]) rowsMap[item.row] = [];
-            rowsMap[item.row].push(item);
-        });
-
-        // Отрисовываем ряды один за другим
-        Object.keys(rowsMap).sort((a, b) => a - b).forEach(rowNum => {
-            const rowLine = document.createElement('div');
-            rowLine.className = 'row-line';
-
-            const rowLabel = document.createElement('div');
-            rowLabel.className = 'row-number';
-            rowLabel.innerText = rowNum;
-            rowLine.appendChild(rowLabel);
-
-            // Сортируем места в ряду по порядку
-            rowsMap[rowNum].sort((a, b) => a.seat - b.seat).forEach(item => {
-                const block = document.createElement('div');
-                block.className = 'seat' + (item.free ? '' : ' busy');
-                block.innerText = `М${item.seat}`;
-                
-                if (item.free) {
-                    block.onclick = () => {
-                        const name = `Ряд ${item.row} Место ${item.seat}`;
-                        
-                        if (block.classList.contains('selected')) {
-                            block.classList.remove('selected');
-                            selectedArray = selectedArray.filter(x => x !== name);
-                        } else {
-                            block.classList.add('selected');
-                            selectedArray.push(name);
-                        }
-
-                        confirmBtn.style.display = selectedArray.length > 0 ? 'block' : 'none';
-                    };
+            if (rawData) {
+                try {
+                    parsedSeats = JSON.parse(decodeURIComponent(rawData));
+                } catch(e) {
+                    console.error("Ошибка парсинга", e);
                 }
-                rowLine.appendChild(block);
+            }
+
+            // Если бот выключен или ошибка связи, покажем стандартную VIP-рассадку
+            if (parsedSeats.length === 0) {
+                parsedSeats = [
+                    { row: 1, seat: 1, free: true }, { row: 1, seat: 2, free: true }, { row: 1, seat: 3, free: true }, { row: 1, seat: 4, free: true },
+                    { row: 2, seat: 1, free: true }, { row: 2, seat: 2, free: false }, { row: 2, seat: 3, free: false }, { row: 2, seat: 4, free: true },
+                    { row: 3, seat: 1, free: true }, { row: 3, seat: 2, free: true }, { row: 3, seat: 3, free: true }, { row: 3, seat: 4, free: true }
+                ];
+            }
+
+            const rowsMap = {};
+            parsedSeats.forEach(item => {
+                if (!rowsMap[item.row]) rowsMap[item.row] = [];
+                rowsMap[item.row].push(item);
             });
 
-            container.appendChild(rowLine);
-        });
+            Object.keys(rowsMap).sort((a, b) => a - b).forEach(rowNum => {
+                const rowLine = document.createElement('div');
+                rowLine.className = 'row-line';
+
+                const rowLabel = document.createElement('div');
+                rowLabel.className = 'row-number';
+                rowLabel.innerText = rowNum;
+                rowLine.appendChild(rowLabel);
+
+                rowsMap[rowNum].sort((a, b) => a.seat - b.seat).forEach(item => {
+                    const block = document.createElement('div');
+                    block.className = 'seat' + (item.free ? '' : ' busy');
+                    block.innerText = `М${item.seat}`;
+                    
+                    if (item.free) {
+                        block.onclick = () => {
+                            const name = `Ряд ${item.row} Место ${item.seat}`;
+                            
+                            if (block.classList.contains('selected')) {
+                                block.classList.remove('selected');
+                                selectedArray = selectedArray.filter(x => x !== name);
+                            } else {
+                                block.classList.add('selected');
+                                selectedArray.push(name);
+                            }
+                            confirmBtn.style.display = selectedArray.length > 0 ? 'block' : 'none';
+                        };
+                    }
+                    rowLine.appendChild(block);
+                });
+                container.appendChild(rowLine);
+            });
+        }
 
         function sendSeatsToBot() {
             if (selectedArray.length > 0) {
                 const resultString = selectedArray.join(', ');
                 tg.sendData(resultString); 
+                tg.close();
+            }
+        }
+    </script>
+</body>
+</html>
+           tg.sendData(resultString); 
                 tg.close();
             }
         }
