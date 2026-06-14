@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Кинотеатр MOON — Выбор VIP мест</title>
-    <!-- Подключаем официальную библиотеку Telegram Web App -->
     <script src="https://telegram.org"></script>
     <style>
         body {
@@ -18,7 +17,6 @@
         h3 { color: #00ffcc; margin-top: 10px; margin-bottom: 5px; }
         .subtitle { color: #777; font-size: 13px; margin-bottom: 25px; }
         
-        /* Светящаяся полоса экрана */
         .screen {
             width: 85%;
             height: 6px;
@@ -29,28 +27,44 @@
         }
         .screen-label { font-size: 11px; color: #555; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 30px; }
 
-        /* Сетка зала */
-        .hall {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 15px;
-            max-width: 320px;
+        /* Контейнер для рядов зала */
+        .hall-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-width: 500px;
             margin: 0 auto 30px auto;
+            padding: 10px;
         }
 
-        /* Дизайн VIP кресел */
+        /* Один горизонтальный ряд */
+        .row-line {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .row-number {
+            font-size: 11px;
+            color: #555;
+            width: 20px;
+            text-align: right;
+        }
+
+        /* Динамическое VIP кресло */
         .seat {
-            padding: 14px 10px;
+            padding: 10px 12px;
             background: #1f2833;
             border: 2px solid #45f3ff;
-            border-radius: 10px;
-            font-size: 12px;
+            border-radius: 8px;
+            font-size: 11px;
             cursor: pointer;
             transition: all 0.2s ease;
             user-select: none;
+            min-width: 35px;
         }
         
-        /* Стиль для занятых кем-то мест */
         .seat.busy {
             background: #2b2b2b;
             border-color: #444;
@@ -58,7 +72,6 @@
             cursor: not-allowed;
         }
 
-        /* Стиль при выборе места девушкой */
         .seat.selected {
             background: #ea00d9;
             border-color: #ea00d9;
@@ -67,7 +80,6 @@
             box-shadow: 0 0 12px #ea00d9;
         }
 
-        /* Большая розовая кнопка отправки */
         .btn-confirm {
             background: #00ffcc;
             color: #0b0c10;
@@ -78,7 +90,7 @@
             border-radius: 30px;
             cursor: pointer;
             box-shadow: 0px 0px 15px rgba(0, 255, 204, 0.4);
-            display: none; /* Прячем, пока ничего не выбрано */
+            display: none;
             margin: 20px auto;
             width: 85%;
             max-width: 280px;
@@ -89,72 +101,104 @@
 <body>
 
     <h3>🍿 Кинопространство MOON</h3>
-    <div class="subtitle">Dana Mall | VIP-зал | Человек-Паук</div>
+    <div class="subtitle">Dana Mall | Зал 7 VIP | Человек-Паук</div>
 
     <div class="screen"></div>
     <div class="screen-label">ЭКРАН Кинотеатра</div>
 
-    <p style="color: #45f3ff; font-weight: bold; font-size: 15px;">Выбери нам места (можно несколько):</p>
+    <p style="color: #45f3ff; font-weight: bold; font-size: 15px;">Выбери нам места:</p>
 
-    <!-- Сюда скрипт вставит кресла -->
-    <div class="hall" id="hallGrid"></div>
+    <!-- Сюда скрипт вставит ряды с креслами любой конфигурации -->
+    <div class="hall-container" id="dynamicHall"></div>
 
-    <!-- Кнопка сохранения выбора -->
     <button class="btn-confirm" id="confirmButton" onclick="sendSeatsToBot()">Подтвердить выбор мест 🎬</button>
 
     <script>
-        const json = JSON; 
         const tg = window.Telegram.WebApp;
-        tg.expand(); // Открываем шторку WebApp на весь экран телефона
+        tg.expand();
 
         let selectedArray = [];
-
-        // Демо-набор мест (Они заменятся на реальные, когда ты настроишь Шаг 6)
-        const demoData = [
-            { row: 3, seat: 1, free: true }, { row: 3, seat: 2, free: true },
-            { row: 3, seat: 3, free: false }, { row: 3, seat: 4, free: false },
-            { row: 4, seat: 1, free: true }, { row: 4, seat: 2, free: true },
-            { row: 4, seat: 3, free: true }, { row: 4, seat: 4, free: true }
-        ];
-
-        const grid = document.getElementById('hallGrid');
+        const container = document.getElementById('dynamicHall');
         const confirmBtn = document.getElementById('confirmButton');
 
-        // Отрисовка кресел на экране
-        demoData.forEach(item => {
-            const block = document.createElement('div');
-            block.className = 'seat' + (item.free ? '' : ' busy');
-            block.innerText = `Р${item.row} М${item.seat}`;
-            
-            if (item.free) {
-                block.onclick = () => {
-                    const name = `Ряд ${item.row} Место ${item.seat}`;
-                    
-                    if (block.classList.contains('selected')) {
-                        // Если уже кликала — отменяем выделение
-                        block.classList.remove('selected');
-                        selectedArray = selectedArray.filter(x => x !== name);
-                    } else {
-                        // Если пустое — выделяем розовым
-                        block.classList.add('selected');
-                        selectedArray.push(name);
-                    }
+        // Получаем JSON-строку от нашего Telegram-бота
+        // Если бот еще не запущен, скрипт возьмет базовый пример
+        let rawData = tg.initDataUnsafe.start_param; 
+        let parsedSeats = [];
 
-                    // Показываем кнопку, если выбрано хотя бы 1 место
-                    confirmBtn.style.display = selectedArray.length > 0 ? 'block' : 'none';
-                };
+        if (rawData) {
+            try {
+                // Декодируем и парсим пришедшие от бота данные
+                parsedSeats = JSON.parse(decodeURIComponent(rawData));
+            } catch(e) {
+                console.error("Ошибка парсинга данных сеанса", e);
             }
-            grid.appendChild(block);
+        }
+
+        // Если данных нет, генерируем базовую схему
+        if (parsedSeats.length === 0) {
+            parsedSeats = [
+                { row: 1, seat: 1, free: true }, { row: 1, seat: 2, free: true }, { row: 1, seat: 3, free: true }, { row: 1, seat: 4, free: true },
+                { row: 2, seat: 1, free: true }, { row: 2, seat: 2, free: false }, { row: 2, seat: 3, free: false }, { row: 2, seat: 4, free: true },
+                { row: 3, seat: 1, free: true }, { row: 3, seat: 2, free: true }, { row: 3, seat: 3, free: true }, { row: 3, seat: 4, free: true }
+            ];
+        }
+
+        // Группируем сиденья по рядам
+        const rowsMap = {};
+        parsedSeats.forEach(item => {
+            if (!rowsMap[item.row]) rowsMap[item.row] = [];
+            rowsMap[item.row].push(item);
         });
 
-        // Функция отправки массива данных обратно в чат бота
+        // Отрисовываем ряды один за другим
+        Object.keys(rowsMap).sort((a, b) => a - b).forEach(rowNum => {
+            const rowLine = document.createElement('div');
+            rowLine.className = 'row-line';
+
+            const rowLabel = document.createElement('div');
+            rowLabel.className = 'row-number';
+            rowLabel.innerText = rowNum;
+            rowLine.appendChild(rowLabel);
+
+            // Сортируем места в ряду по порядку
+            rowsMap[rowNum].sort((a, b) => a.seat - b.seat).forEach(item => {
+                const block = document.createElement('div');
+                block.className = 'seat' + (item.free ? '' : ' busy');
+                block.innerText = `М${item.seat}`;
+                
+                if (item.free) {
+                    block.onclick = () => {
+                        const name = `Ряд ${item.row} Место ${item.seat}`;
+                        
+                        if (block.classList.contains('selected')) {
+                            block.classList.remove('selected');
+                            selectedArray = selectedArray.filter(x => x !== name);
+                        } else {
+                            block.classList.add('selected');
+                            selectedArray.push(name);
+                        }
+
+                        confirmBtn.style.display = selectedArray.length > 0 ? 'block' : 'none';
+                    };
+                }
+                rowLine.appendChild(block);
+            });
+
+            container.appendChild(rowLine);
+        });
+
         function sendSeatsToBot() {
             if (selectedArray.length > 0) {
-                // Склеиваем массив в красивую строку: "Ряд 3 Место 1, Ряд 3 Место 2"
                 const resultString = selectedArray.join(', ');
                 tg.sendData(resultString); 
-                tg.close(); // Закрываем Web App
+                tg.close();
             }
+        }
+    </script>
+</body>
+</html>
+
         }
     </script>
 </body>
