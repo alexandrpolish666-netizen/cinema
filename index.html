@@ -28,7 +28,6 @@
             justify-content: center;
             width: 100%;
             height: 100%;
-            position: relative;
         }
         h2 { color: #00ffcc; margin-bottom: 10px; font-size: 24px; }
         .gif-container img { width: 150px; height: 150px; margin-bottom: 20px; border-radius: 10px; }
@@ -37,7 +36,7 @@
             position: relative; 
             width: 100%; 
             max-width: 400px; 
-            height: 100px; 
+            height: 150px; 
             margin-top: 20px; 
         }
         
@@ -51,8 +50,6 @@
             position: absolute;
             transition: all 0.1s ease;
         }
-        #yesBtn { background: #00ffcc; color: #0b0c10; left: 50px; top: 20px; box-shadow: 0 0 15px #00ffcc; }
-        #noBtn { background: #ea00d9; color: #fff; right: 50px; top: 20px; box-shadow: 0 0 15px #ea00d9; z-index: 999; }
 
         #hallScreen {
             display: none;
@@ -95,8 +92,8 @@
         <p style="color: #777; font-size: 14px; margin: 0 20px;">В конце июля, на нового Человека-Паука в VIP-зал MOON в Dana Mall!</p>
         
         <div class="btn-group">
-            <button class="btn-main" id="yesBtn">Да! 🥰</button>
-            <button class="btn-main" id="noBtn">Нет 😢</button>
+            <button class="btn-main" id="yesBtn" style="background: #00ffcc; color: #0b0c10; left: 30px; top: 30px; box-shadow: 0 0 15px #00ffcc;">Да! 🥰</button>
+            <button class="btn-main" id="noBtn" style="background: #ea00d9; color: #fff; right: 30px; top: 30px; box-shadow: 0 0 15px #ea00d9; z-index: 9999;">Нет 😢</button>
         </div>
     </div>
 
@@ -119,30 +116,27 @@
         const hallScreen = document.getElementById('hallScreen');
         const inviteGif = document.getElementById('inviteGif');
 
-        // 🔥 УЛУЧШЕННЫЙ ОБХОД КУРСОРA НА ПК
-        const moveNoButton = (e) => {
+        // 🔥 Абсолютно неуловимая кнопка
+        const moveNoButton = () => {
             inviteGif.src = "https://giphy.com";
             
-            // Вычисляем случайные координаты по всей ширине и высоте экрана приложения
             const maxWidth = window.innerWidth - noBtn.offsetWidth - 40;
             const maxHeight = window.innerHeight - noBtn.offsetHeight - 40;
             
-            const randomX = Math.max(10, Math.floor(Math.random() * maxWidth));
-            const randomY = Math.max(10, Math.floor(Math.random() * maxHeight));
+            const randomX = Math.max(20, Math.floor(Math.random() * maxWidth));
+            const randomY = Math.max(20, Math.floor(Math.random() * maxHeight));
             
-            // Переводим кнопку в абсолютное позиционирование относительно экрана body
             noBtn.style.position = 'fixed';
             noBtn.style.left = randomX + 'px';
             noBtn.style.top = randomY + 'px';
         };
 
-        // Заставляем кнопку летать и на ПК, и на смартфонах
         noBtn.addEventListener('mouseover', moveNoButton);
-        noBtn.addEventListener('mousemove', moveNoButton);
+        noBtn.addEventListener('mouseenter', moveNoButton);
         noBtn.addEventListener('touchstart', moveNoButton);
 
-        // Клик по кнопке "Да" теперь работает железно
-        yesBtn.onclick = function() {
+        yesBtn.onclick = function(e) {
+            e.preventDefault();
             inviteScreen.style.display = 'none';
             hallScreen.style.display = 'block';
             renderHall(); 
@@ -153,9 +147,7 @@
         const confirmBtn = document.getElementById('confirmButton');
 
         function renderHall() {
-            // Очищаем контейнер перед отрисовкой, чтобы не дублировать кнопки
             container.innerHTML = '';
-            
             let rawData = tg.initDataUnsafe.start_param; 
             let parsedSeats = [];
 
@@ -167,7 +159,6 @@
                 }
             }
 
-            // Стандартный VIP-ряд, если бот не передал данные
             if (parsedSeats.length === 0) {
                 parsedSeats = [
                     { row: 1, seat: 1, free: true }, { row: 1, seat: 2, free: true }, { row: 1, seat: 3, free: true }, { row: 1, seat: 4, free: true },
@@ -226,4 +217,3 @@
     </script>
 </body>
 </html>
-
