@@ -2,117 +2,108 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Кинотеатр mooon - Бронирование VIP</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Кинотеатр mooon — Выбор мест</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Montserrat', sans-serif; }
-        body { background-color: #0b0f19; color: #ffffff; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; overflow-x: hidden; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Montserrat', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background-color: #060913; color: #ffffff; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 15px; overflow-x: hidden; }
         
-        .container { width: 100%; max-width: 800px; background: #131a26; border-radius: 24px; padding: 30px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); text-align: center; border: 1px solid #1e293b; }
-        h1 { font-size: 26px; font-weight: 700; margin-bottom: 10px; color: #f59e0b; letter-spacing: 1px; }
-        .subtitle { color: #94a3b8; font-size: 14px; margin-bottom: 30px; }
+        .container { width: 100%; max-width: 750px; background: #0f1424; border-radius: 24px; padding: 35px 25px; box-shadow: 0 25px 50px rgba(0,0,0,0.6); text-align: center; border: 1px solid #1e2942; position: relative; overflow: hidden; min-height: 250px; display: flex; flex-direction: column; justify-content: center; }
+        h1 { font-size: 28px; font-weight: 700; margin-bottom: 8px; color: #f59e0b; letter-spacing: 0.5px; }
+        .subtitle { color: #8493a8; font-size: 14px; margin-bottom: 35px; line-height: 1.5; }
         
-        /* Стили шагов */
-        .screen-block { display: none; }
-        .screen-block.active { display: block; animation: fadeIn 0.4s ease-in-out; }
+        .screen-block { display: none; width: 100%; }
+        .screen-block.active { display: block; animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
         
-        /* Кнопки ДА/НЕТ */
-        .btn-group { display: flex; justify-content: center; gap: 20px; margin-top: 30px; position: relative; height: 60px; }
-        .btn { padding: 15px 40px; border-radius: 12px; font-size: 16px; font-weight: 600; border: none; cursor: pointer; transition: all 0.2s ease; text-decoration: none; display: inline-block; }
-        .btn-yes { background: #10b981; color: white; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4); }
-        .btn-yes:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(16, 185, 129, 0.6); }
-        .btn-no { background: #ef4444; color: white; position: absolute; box-shadow: 0 4px 14px rgba(239, 68, 68, 0.4); }
+        .btn-group { display: flex; justify-content: center; gap: 20px; margin-top: 40px; position: relative; min-height: 65px; width: 100%; }
+        .btn { padding: 16px 36px; border-radius: 14px; font-size: 16px; font-weight: 600; border: none; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; text-decoration: none; display: inline-block; }
+        .btn-yes { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; box-shadow: 0 6px 20px rgba(16, 185, 129, 0.35); width: 100%; max-width: 280px; }
+        .btn-yes:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(16, 185, 129, 0.5); }
+        .btn-no { background: #ef4444; color: white; position: absolute; box-shadow: 0 6px 18px rgba(239, 68, 68, 0.35); z-index: 99; width: 130px; transition: all 0.1s ease; }
         
-        /* Выбор даты и времени */
-        .selector-title { text-align: left; font-size: 14px; color: #94a3b8; margin: 20px 0 10px 5px; font-weight: 600; }
-        .grid-chips { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; margin-bottom: 25px; }
-        .chip { background: #1e293b; border: 2px solid transparent; padding: 12px; border-radius: 12px; cursor: pointer; text-align: center; transition: all 0.2s ease; font-size: 14px; }
-        .chip:hover { background: #334155; }
-        .chip.selected { border-color: #f59e0b; background: rgba(245, 158, 11, 0.15); color: #f59e0b; font-weight: 600; }
+        .grid-chips { display: grid; grid-template-columns: repeat(auto-fill, minmax(145px, 1fr)); gap: 12px; margin-bottom: 25px; }
+        .chip { background: #161f38; border: 2px solid transparent; padding: 14px 10px; border-radius: 14px; cursor: pointer; text-align: center; transition: all 0.25s ease; font-size: 14px; color: #cbd5e1; }
+        .chip.selected { border-color: #f59e0b; background: rgba(245, 158, 11, 0.12); color: #f59e0b; font-weight: 600; }
         
-        /* Карта зала */
-        .cinema-screen { width: 80%; height: 6px; background: #38bdf8; margin: 0 auto 40px auto; border-radius: 10px; box-shadow: 0 10px 20px rgba(56, 189, 248, 0.5); }
-        .hall-grid { display: flex; flex-direction: column; gap: 15px; margin-bottom: 40px; }
-        .row-container { display: flex; align-items: center; justify-content: center; gap: 10px; }
-        .row-num { width: 25px; color: #64748b; font-size: 12px; font-weight: 600; text-align: center; }
+        .cinema-screen { width: 85%; height: 5px; background: linear-gradient(90deg, transparent 0%, #38bdf8 50%, transparent 100%); margin: 10px auto 45px auto; border-radius: 10px; box-shadow: 0 12px 25px rgba(56, 189, 248, 0.4); position: relative; }
+        .cinema-screen::after { content: 'ЭКРАН'; position: absolute; top: 12px; left: 50%; transform: translateX(-50%); font-size: 10px; color: #38bdf8; font-weight: 600; opacity: 0.7; }
         
-        /* Места */
-        .seat { border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 600; cursor: pointer; user-select: none; transition: all 0.15s ease; }
-        .seat.single { width: 32px; height: 32px; background: #334155; border: 1px solid #475569; color: #cbd5e1; }
-        .seat.sofa { width: 74px; height: 32px; background: #1e1b4b; border: 1px solid #3730a3; color: #c7d2fe; border-radius: 8px; }
+        .hall-grid { display: flex; flex-direction: column; gap: 14px; margin-bottom: 35px; overflow-x: auto; padding: 20px 15px; background: #090d16; border-radius: 20px; border: 1px solid #161f35; }
+        .row-container { display: flex; align-items: center; justify-content: center; gap: 9px; min-width: max-content; margin: 0 auto; }
+        .row-num { width: 35px; color: #475569; font-size: 11px; font-weight: 700; text-align: left; }
         
-        .seat.busy { background: #1e293b !important; border: 1px solid #1e293b !important; color: #475569 !important; cursor: not-allowed; opacity: 0.4; }
-        .seat.selected { background: #f59e0b !important; border-color: #d97706 !important; color: #0b0f19 !important; box-shadow: 0 0 12px rgba(245, 158, 11, 0.5); }
+        .seat { border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; cursor: pointer; user-select: none; transition: all 0.15s ease; }
+        .seat.single { width: 34px; height: 34px; background: #26334d; border: 1px solid #334466; color: #94a3b8; }
+        .seat.sofa { width: 76px; height: 34px; background: #1e1b4b; border: 1px solid #3c3685; color: #a5b4fc; border-radius: 9px; }
         
-        /* Легенда */
-        .legend { display: flex; justify-content: center; gap: 20px; margin-bottom: 30px; font-size: 12px; color: #94a3b8; }
-        .legend-item { display: flex; align-items: center; gap: 6px; }
+        .seat.busy { background: #161f30 !important; border: 1px solid #161f30 !important; color: #334155 !important; cursor: not-allowed; opacity: 0.25; }
+        .seat.selected { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important; border-color: #b45309 !important; color: #060913 !important; box-shadow: 0 0 15px rgba(245, 158, 11, 0.6); }
+        
+        .legend { display: flex; justify-content: center; gap: 22px; margin-bottom: 35px; font-size: 12px; color: #64748b; flex-wrap: wrap; font-weight: 600; }
+        .legend-item { display: flex; align-items: center; gap: 7px; }
         .legend-badge { width: 14px; height: 14px; border-radius: 4px; }
         
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
 <div class="container">
+    <!-- СЕКРЕТНЫЙ ЭКРАН ЗАГЛУШКА: Фейсконтроль -->
+    <div id="screen-stranger" class="screen-block">
+        <h1 style="color: #ef4444;">А вы кто такая? 🤔</h1>
+        <p class="subtitle" style="margin-top: 15px;">Извините, но эта ссылка была создана специально для любимой подруги. Доступ к выбору билетов ограничен!</p>
+        <div style="font-size: 60px; margin-top: 20px;">🚫🔒</div>
+    </div>
+
     <!-- ЭКРАН 1: Приглашение -->
-    <div id="screen-invite" class="screen-block active">
+    <div id="screen-invite" class="screen-block">
         <h1>Пойдем в кино? ✨</h1>
-        <p class="subtitle">Я выбрал для нас самый комфортный VIP-зал в mooon</p>
+        <p class="subtitle">Я выбрал крутой фильм в ТРЦ Dana Mall.<br>С тебя — самые удобные места!</p>
         <div class="btn-group">
-            <button class="btn btn-yes" onclick="nextScreen()">Да, с удовольствием!</button>
-            <button class="btn btn-no" id="reject-btn" onmouseover="dodgeButton()">Нет</button>
+            <button class="btn btn-yes" onclick="nextScreen()">Да, давай!</button>
+            <button class="btn btn-no" id="reject-btn">Нет</button>
         </div>
     </div>
 
-    <!-- ЭКРАН 2: Выбор сеанса -->
+    <!-- ЭКРАН 2: Расписание -->
     <div id="screen-time" class="screen-block">
-        <h1>Выбери удобное время</h1>
-        <p class="subtitle">Расписание обновляется в реальном времени напрямую с сайта кинотеатра</p>
-        
-        <div class="selector-title">Доступные дни:</div>
+        <h1>Выбери сеанс</h1>
+        <p class="subtitle">Расписание mooon в ТРЦ Dana Mall обновлено</p>
         <div id="date-container" class="grid-chips"></div>
-        
-        <div class="selector-title">Доступные VIP-сеансы:</div>
         <div id="time-container" class="grid-chips"></div>
-        
-        <button class="btn btn-yes" id="time-next-btn" disabled style="width: 100%; margin-top: 15px;" onclick="loadHallMap()">Перейти к выбору мест</button>
+        <button class="btn btn-yes" id="time-next-btn" disabled style="width: 100%; max-width: 100%; margin-top: 20px;" onclick="loadHallMap()">Выбрать места в зале</button>
     </div>
 
     <!-- ЭКРАН 3: Интерактивный Зал -->
     <div id="screen-hall" class="screen-block">
-        <h1>Выбери места на свой вкус</h1>
-        <p class="subtitle" id="hall-info-title">Зал 7 VIP (mooon)</p>
-        
+        <h1>Выбор мест</h1>
+        <p class="subtitle" id="hall-info-title">Зал</p>
         <div class="cinema-screen"></div>
-        
         <div id="hall-layout" class="hall-grid"></div>
-        
         <div class="legend">
-            <div class="legend-item"><div class="legend-badge" style="background: #334155;"></div> Свободно</div>
-            <div class="legend-item"><div class="legend-badge" style="background: #1e1b4b;"></div> VIP Диван / Комната</div>
-            <div class="legend-item"><div class="legend-badge" style="background: #f59e0b;"></div> Ваш выбор</div>
-            <div class="legend-item"><div class="legend-badge" style="background: #1e293b; opacity: 0.4;"></div> Занято</div>
+            <div class="legend-item"><div class="legend-badge" style="background: #26334d; border: 1px solid #334466;"></div> Стандарт</div>
+            <div class="legend-item"><div class="legend-badge" style="background: #1e1b4b; border: 1px solid #3c3685;"></div> VIP / Диван</div>
+            <div class="legend-item"><div class="legend-badge" style="background: #f59e0b;"></div> Выбрано</div>
+            <div class="legend-item"><div class="legend-badge" style="background: #161f30; opacity: 0.3;"></div> Занято</div>
         </div>
-        
-        <button class="btn btn-yes" id="book-btn" disabled style="width: 100%;" onclick="finalizeBooking()">Подтвердить бронирование</button>
+        <button class="btn btn-yes" id="book-btn" disabled style="width: 100%; max-width: 100%;" onclick="finalizeBooking()">Перейти к оплате 💳</button>
     </div>
 
-    <!-- ЭКРАН 4: Финал -->
+    <!-- ЭКРАН 4: Перенаправление -->
     <div id="screen-finish" class="screen-block">
-        <h1 style="color: #10b981;">Места успешно забронированы! 🎉</h1>
-        <p class="subtitle" style="margin-bottom: 15px;">Билеты оформляются. Я пришлю тебе детали сеанса совсем скоро!</p>
-        <div style="font-size: 60px; margin: 20px 0;">🎬🍿</div>
+        <h1 style="color: #10b981;">До встречи в кино! 🎉</h1>
+        <p class="subtitle" style="margin-bottom: 5px;">Места зафиксированы, данные отправлены.</p>
+        <p class="subtitle" style="color: #f59e0b; font-weight: 600;">Секунду, открываю страницу оплаты на Mooon...</p>
+        <div style="font-size: 65px; margin-top: 25px;">🍿🎬❤️</div>
     </div>
 </div>
 
 <script>
-    const API_BASE = "https://c4030cf5e7d35c80-46-53-134-249.serveousercontent.com"; // Измени на серверный IP при деплое
-    
-    // Получаем никнейм из URL (например, index.html?user=Alena)
+    const API_BASE = "http://127.0.0.1:3000/api"; 
     const urlParams = new URLSearchParams(window.location.search);
-    const username = urlParams.get('user') || "Гость";
+    const username = urlParams.get('user') || "guest"; // Если параметра нет — по дефолту guest
 
     let noClicksCount = 0;
     let scheduleData = {};
@@ -120,24 +111,52 @@
     let selectedTimeObj = null;
     let selectedSeats = [];
 
-    // Логика убегающей кнопки
-    function dodgeButton() {
-        noClicksCount++;
-        const btn = document.getElementById('reject-btn');
-        const x = Math.random() * (window.innerWidth - btn.offsetWidth - 40) + 20;
-        const y = Math.random() * (window.innerHeight - btn.offsetHeight - 40) + 20;
-        
-        btn.style.position = 'fixed';
-        btn.style.left = `${x}px`;
-        btn.style.top = `${y}px`;
+    // Запуск проверки пользователя при загрузке страницы
+    document.addEventListener("DOMContentLoaded", async () => {
+        try {
+            const res = await fetch(`${API_BASE}/verify`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ username: username })
+            });
+            const data = await res.json();
+            
+            if(data.status === "granted") {
+                // Если доступ разрешен, показываем экран инвайта
+                document.getElementById('screen-invite').classList.add('active');
+            } else {
+                // Если чужой — выкидываем ошибку "А вы кто такая?"
+                document.getElementById('screen-stranger').classList.add('active');
+            }
+        } catch (err) {
+            document.getElementById('screen-stranger').classList.add('active');
+        }
+    });
 
-        // Отправляем уведомление на бэкенд о попытке нажать "Нет"
+    // Уклонение кнопки "Нет"
+    const btnNo = document.getElementById('reject-btn');
+    function dodgeButton(e) {
+        if(e) e.preventDefault();
+        noClicksCount++;
+        const container = document.querySelector('.container');
+        
+        const maxX = container.clientWidth - btnNo.clientWidth - 30;
+        const maxY = container.clientHeight - btnNo.clientHeight - 30;
+        
+        const randomX = Math.floor(Math.random() * maxX) + 15;
+        const randomY = Math.floor(Math.random() * maxY) + 15;
+        
+        btnNo.style.left = randomX + 'px';
+        btnNo.style.top = randomY + 'px';
+
         fetch(`${API_BASE}/track-no`, {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({ username: username, no_clicks: noClicksCount })
-        });
+        }).catch(() => {});
     }
+
+    ['mouseover', 'click', 'touchstart'].forEach(ev => btnNo.addEventListener(ev, dodgeButton));
 
     function nextScreen() {
         document.getElementById('screen-invite').classList.remove('active');
@@ -145,15 +164,13 @@
         fetchSchedule();
     }
 
-    // Загрузка расписания
     async function fetchSchedule() {
         try {
             const res = await fetch(`${API_BASE}/schedule`);
-            if(!res.ok) throw new Error("Ошибка бэкенда");
             scheduleData = await res.json();
             renderDates();
         } catch (err) {
-            alert("Не удалось загрузить живое расписание mooon. Проверь работу сервера.");
+            alert("Ошибка загрузки данных. Проверь сервер.");
         }
     }
 
@@ -164,18 +181,14 @@
             const chip = document.createElement('div');
             chip.className = 'chip';
             chip.innerText = date;
-            chip.onclick = () => selectDate(date, chip);
+            chip.onclick = () => {
+                document.querySelectorAll('#date-container .chip').forEach(c => c.classList.remove('selected'));
+                chip.classList.add('selected');
+                selectedDate = date;
+                renderTimes(date);
+            };
             container.appendChild(chip);
         });
-    }
-
-    function selectDate(date, element) {
-        document.querySelectorAll('#date-container .chip').forEach(c => c.classList.remove('selected'));
-        element.classList.add('selected');
-        selectedDate = date;
-        selectedTimeObj = null;
-        document.getElementById('time-next-btn').disabled = true;
-        renderTimes(date);
     }
 
     function renderTimes(date) {
@@ -184,48 +197,41 @@
         scheduleData[date].forEach(session => {
             const chip = document.createElement('div');
             chip.className = 'chip';
-            chip.innerHTML = `<strong>${session.time}</strong><br><span style="font-size:10px; color:#64748b;">${session.hall}</span>`;
-            chip.onclick = () => selectTime(session, chip);
+            chip.innerHTML = `<strong>${session.time}</strong><br><span style="font-size:11px; opacity:0.6;">${session.hall}</span>`;
+            chip.onclick = () => {
+                document.querySelectorAll('#time-container .chip').forEach(c => c.classList.remove('selected'));
+                chip.classList.add('selected');
+                selectedTimeObj = session;
+                document.getElementById('time-next-btn').disabled = false;
+            };
             container.appendChild(chip);
         });
     }
 
-    function selectTime(session, element) {
-        document.querySelectorAll('#time-container .chip').forEach(c => c.classList.remove('selected'));
-        element.classList.add('selected');
-        selectedTimeObj = session;
-        document.getElementById('time-next-btn').disabled = false;
-    }
-
-    // Отрисовка точной карты зала mooon
     function loadHallMap() {
         document.getElementById('screen-time').classList.remove('active');
         document.getElementById('screen-hall').classList.add('active');
-        document.getElementById('hall-info-title').innerText = `${selectedTimeObj.hall} • ${selectedTimeObj.time}`;
+        document.getElementById('hall-info-title').innerText = `${selectedTimeObj.hall} в ${selectedTimeObj.time}`;
         
         const layout = document.getElementById('hall-layout');
         layout.innerHTML = "";
-        selectedSeats = [];
-        document.getElementById('book-btn').disabled = true;
 
-        // Группируем места по рядам для аккуратной верстки
         const rowsMap = {};
         selectedTimeObj.seats.forEach(s => {
             if (!rowsMap[s.row]) rowsMap[s.row] = [];
             rowsMap[s.row].push(s);
         });
 
-        // Строим ряды точь-в-точь по данным API
         Object.keys(rowsMap).sort((a,b) => a-b).forEach(rowNum => {
             const rowDiv = document.createElement('div');
             rowDiv.className = 'row-container';
             
             const label = document.createElement('div');
             label.className = 'row-num';
-            label.innerText = rowNum;
+            label.innerText = `Ряд ${rowNum}`;
             rowDiv.appendChild(label);
 
-            rowsMap[rowNum].forEach(seatData => {
+            rowsMap[rowNum].sort((a,b) => parseInt(a.seat) - parseInt(b.seat)).forEach(seatData => {
                 const seatDiv = document.createElement('div');
                 seatDiv.className = `seat ${seatData.type}`;
                 seatDiv.innerText = seatData.seat;
@@ -233,36 +239,28 @@
                 if (!seatData.free) {
                     seatDiv.classList.add('busy');
                 } else {
-                    seatDiv.onclick = () => toggleSeat(seatData, seatDiv);
+                    seatDiv.onclick = () => {
+                        const id = `Ряд ${seatData.row} Место ${seatData.seat}`;
+                        if (seatDiv.classList.contains('selected')) {
+                            seatDiv.classList.remove('selected');
+                            selectedSeats = selectedSeats.filter(s => s !== id);
+                        } else {
+                            seatDiv.classList.add('selected');
+                            selectedSeats.push(id);
+                        }
+                        document.getElementById('book-btn').disabled = selectedSeats.length === 0;
+                    };
                 }
                 rowDiv.appendChild(seatDiv);
             });
-            
             layout.appendChild(rowDiv);
         });
     }
 
-    function toggleSeat(seatData, element) {
-        const seatIdentifier = `Ряд ${seatData.row} Место ${seatData.seat}`;
-        if (element.classList.contains('selected')) {
-            element.classList.remove('selected');
-            selectedSeats = selectedSeats.filter(s => s !== seatIdentifier);
-        } else {
-            element.classList.add('selected');
-            selectedSeats.push(seatIdentifier);
-        }
-        document.getElementById('book-btn').disabled = selectedSeats.length === 0;
-    }
-
-    // Финал бронирования
     async function finalizeBooking() {
         const payload = {
-            date: selectedDate,
-            time: selectedTimeObj.time,
-            hall: selectedTimeObj.hall,
-            seats: selectedSeats,
-            username: username,
-            no_clicks: noClicksCount
+            date: selectedDate, time: selectedTimeObj.time, hall: selectedTimeObj.hall,
+            seats: selectedSeats, username: username, no_clicks: noClicksCount
         };
 
         try {
@@ -271,12 +269,18 @@
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify(payload)
             });
+
             if(res.ok) {
                 document.getElementById('screen-hall').classList.remove('active');
                 document.getElementById('screen-finish').classList.add('active');
+                
+                // Авто-переход на сайт Mooon для финальной оплаты через 2 секунды
+                setTimeout(() => {
+                    window.location.href = `https://mooon.by/hall?showId=${selectedTimeObj.showId}`;
+                }, 2000);
             }
         } catch (err) {
-            alert("Ошибка при сохранении бронирования.");
+            alert("Ошибка связи с сервером.");
         }
     }
 </script>
