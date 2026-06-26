@@ -50,8 +50,8 @@
 
 <div class="container">
     <div id="screen-stranger" class="screen-block">
-        <h1 style="color: #ff0055; font-size: 24px;">Доступ ограничен 🔒</h1>
-        <p class="subtitle-gray" style="margin-top: 15px;">Извините, этот приватный сеанс зарезервирован.</p>
+        <h1 style="color: #ff0055; font-size: 24px;">Ошибка сети 🌐</h1>
+        <p class="subtitle-gray" style="margin-top: 15px;">Не удалось установить соединение с сервером приглашений.</p>
     </div>
 
     <div id="screen-invite" class="screen-block">
@@ -92,8 +92,8 @@
 </div>
 
 <script>
-    // СЮДА ВСТАВЛЯЕШЬ ССЫЛКУ ИЗ СВОЕГО ТУННЕЛЯ (ОБЯЗАТЕЛЬНО С /api НА КОНЦЕ)
-    const API_BASE = "https://91a5d734f6d1c331-46-53-134-249.serveousercontent.com/api"; 
+    // 🔥 МАГИЯ: Ссылка определяется сама в зависимости от туннеля! Больше ничего менять руками НЕ НАДО!
+    const API_BASE = window.location.origin + "/api"; 
     
     const tg = window.Telegram.WebApp;
     tg.ready(); tg.expand();
@@ -111,14 +111,12 @@
             });
             const data = await res.json();
             
-            // ЕСЛИ ОНА УЖЕ ВЫБИРАЛА МЕСТА РАНЕЕ — НАМЕРТВО БЛОКИРУЕМ ИНТЕРФЕЙС НА ЭКРАНЕ "УВИДИМСЯ"
             if (data.status === "booked") {
                 document.getElementById('screen-finish').querySelector('.subtitle-gray').innerText = "Наше свидание уже подтверждено. До встречи! ❤️";
                 document.getElementById('screen-finish').classList.add('active');
-            } else if(data.status === "granted") {
-                document.getElementById('screen-invite').classList.add('active');
             } else {
-                document.getElementById('screen-stranger').classList.add('active');
+                // Доступ открыт абсолютно всем!
+                document.getElementById('screen-invite').classList.add('active');
             }
         } catch (err) {
             document.getElementById('screen-stranger').classList.add('active');
@@ -253,13 +251,10 @@
                 document.getElementById('screen-hall').classList.remove('active');
                 document.getElementById('screen-finish').classList.add('active');
                 
-                // КРАСИВЫЙ СЦЕНАРИЙ ЗАКРЫТИЯ
                 setTimeout(() => { 
                     const targetUrl = `https://mooon.by/hall?showId=${selectedTimeObj.showId}`;
                     if (window.Telegram?.WebApp?.openLink) {
-                        // 1. Открываем официальный сайт оплаты во внешнем браузере телефона
                         window.Telegram.WebApp.openLink(targetUrl); 
-                        // 2. Намертво закрываем окно WebApp внутри телеграма
                         window.Telegram.WebApp.close();            
                     } else {
                         window.location.href = targetUrl;
@@ -270,4 +265,4 @@
     }
 </script>
 </body>
-</html>>
+</html>
