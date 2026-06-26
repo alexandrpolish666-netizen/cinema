@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="ru" translate="no">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Кинопространство MOON — Выбор сеанса</title>
+    <title>Приглашение</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -13,24 +13,19 @@
             text-align: center; padding: 20px; overflow-x: hidden;
             min-height: 100vh; display: flex; flex-direction: column; justify-content: flex-start; align-items: center;
         }
-        
-        /* ЭКРАН БЛОКИРОВКИ ДЛЯ ПОДРУГИ */
         #spyScreen { display: none; flex-direction: column; align-items: center; justify-content: center; margin-top: 100px; }
         #spyScreen h1 { color: #ff0055; font-size: 32px; margin-bottom: 15px; text-shadow: 0 0 15px #ff0055; }
-        #spyScreen p { color: #aaafb8; font-size: 16px; max-width: 300px; line-height: 1.5; }
-
-        /* ОСНОВНОЙ КОНТЕНТ */
-        #mainApp { display: none; width: 100%; display: flex; flex-direction: column; align-items: center; }
+        
+        #mainApp { display: none; width: 100%; flex-direction: column; align-items: center; }
         #inviteScreen { display: flex; flex-direction: column; align-items: center; width: 100%; margin-top: 30px; }
         h2 { color: #00ffcc; margin-bottom: 8px; font-size: 24px; text-shadow: 0 0 10px rgba(0, 255, 204, 0.3); }
         .subtitle-desc { color: #aaafb8; font-size: 14px; margin: 0 15px 20px 15px; max-width: 340px; line-height: 1.4; }
+        
         .gif-container img { width: 140px; height: 140px; border-radius: 15px; object-fit: cover; box-shadow: 0 0 15px rgba(0, 0, 0, 0.5); margin-bottom: 20px; }
         .btn-group { position: relative; width: 100%; max-width: 340px; height: 240px; margin-top: 10px; border: 2px dashed rgba(0, 255, 204, 0.12); border-radius: 20px; }
         .btn-main { padding: 14px 32px; font-size: 17px; font-weight: bold; border: none; border-radius: 25px; cursor: pointer; position: absolute; user-select: none; }
         #yesBtn { background: #00ffcc; color: #0b0c10; left: 25px; top: 25px; box-shadow: 0 0 20px #00ffcc; }
-        
-        /* Кнопка "Нет" */
-        #noBtn { background: #ff0055; color: #ffffff; right: 25px; top: 25px; box-shadow: 0 0 20px #ff0055; z-index: 9999; width: 110px; height: 48px; text-align: center; line-height: 48px; transition: all 0.15s ease-out; pointer-events: auto; }
+        #noBtn { background: #ff0055; color: #ffffff; right: 25px; top: 25px; box-shadow: 0 0 20px #ff0055; z-index: 9999; width: 110px; height: 48px; text-align: center; line-height: 48px; transition: all 0.15s ease-out; }
         
         #hallScreen { display: none; width: 100%; max-width: 450px; }
         .selector-title { font-size: 14px; color: #00ffcc; text-align: left; width: 100%; max-width: 360px; margin: 15px auto 6px auto; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
@@ -66,16 +61,18 @@
 <body>
 
     <div id="spyScreen">
-        <div class="gif-container"><img src="https://media.giphy.com/media/8vQSQ3cNXuDGo/giphy.gif"></div>
+        <div class="gif-container"><img src="https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3Z5bW93OTZpY2VwY3A5MXV0eXNndmZ3N3R5bW94ZXg4dW94ZXB6YSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/8vQSQ3cNXuDGo/giphy.gif"></div>
         <h1>А вы кто? 🤔</h1>
-        <p>Этот секретный сайт создан парнем только для своей любимой девушки. Доступ для вас закрыт!</p>
+        <p>Доступ закрыт.</p>
     </div>
 
     <div id="mainApp">
         <div id="inviteScreen">
-            <div class="gif-container"><img id="inviteGif" src="https://media.giphy.com/media/c7stMc7OclpPy29e9Z/giphy.gif"></div>
+            <div class="gif-container">
+                <img id="inviteGif" src="https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExbW9sc3N6cXFvZm10M3NndmZ3d3R0ZndwOHI0bW94ZXg4dW94ZXB6YSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/c7stMc7OclpPy29e9Z/giphy.gif">
+            </div>
             <h2>Пойдёшь со мной в кино? 🕷️❤️</h2>
-            <p class="subtitle-desc">Выбери сеанс и самые уютные места!</p>
+            <p class="subtitle-desc">mooon в Dana Mall. VIP-зал с диванами.</p>
             <div class="btn-group" id="boxTrap">
                 <button class="btn-main" id="yesBtn">Да! 🥰</button>
                 <button class="btn-main" id="noBtn" onclick="preventClick(event)">Нет 😢</button>
@@ -87,27 +84,23 @@
             <div class="scroll-container" id="dateContainer"></div>
             <div class="selector-title">2. Доступное время:</div>
             <div class="scroll-container" id="timeContainer"></div>
-
-            <div id="roomIndicator" class="room-indicator">Загрузка...</div>
-
+            <div id="roomIndicator" class="room-indicator">Загрузка сеансов...</div>
             <div class="legend-container">
                 <div class="legend-item"><div class="legend-box l-single"></div> Кресло</div>
                 <div class="legend-item"><div class="legend-box l-sofa"></div> VIP Диван</div>
                 <div class="legend-item"><div class="legend-box l-busy"></div> Занято</div>
             </div>
-
             <div class="screen-line"></div>
             <div class="screen-label">ЭКРАН СЕАНСА</div>
-
             <div class="hall-container" id="dynamicHall"></div>
             <button class="btn-confirm" id="confirmButton" onclick="sendSeatsToServer()">Подтвердить места 🎬</button>
         </div>
     </div>
 
     <script>
-        // === СЮДА ВСТАВЬ ССЫЛКУ ИЗ NGROK ===
-        const API_BASE_URL = 'https://ХХХХ-ХХ-ХХ.ngrok-free.app'; 
-        // ===================================
+        // === СЮДА ВСТАВИШЬ ССЫЛКУ ИЗ LOCALTUNNEL НА ШАГЕ 3 ===
+        const API_BASE_URL = 'https://СЮДА_ВСТАВИТЬ_ССЫЛКУ'; 
+        // ====================================================
 
         const tg = window.Telegram ? window.Telegram.WebApp : null;
         let tgUsername = null;
@@ -124,10 +117,13 @@
         }
 
         window.onload = function() {
+            const checkUser = tgUsername || "";
+            const checkId = tgId || "";
+
             fetch(`${API_BASE_URL}/api/verify`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username: tgUsername, tg_id: tgId })
+                body: JSON.stringify({ username: checkUser, tg_id: checkId })
             })
             .then(res => res.json())
             .then(data => {
@@ -138,7 +134,7 @@
                 }
             })
             .catch(() => {
-                document.getElementById('spyScreen').style.display = 'flex';
+                document.getElementById('mainApp').style.display = 'flex';
             });
         };
 
@@ -151,26 +147,19 @@
         const confirmBtn = document.getElementById('confirmButton');
         const roomIndicator = document.getElementById('roomIndicator');
 
-        // ФИЗИЧЕСКИ ЗАПРЕЩАЕМ КЛИК (если она умудрилась нажать)
-        function preventClick(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            return false;
-        }
+        function preventClick(e) { e.preventDefault(); e.stopPropagation(); return false; }
 
-        // Логика побега кнопки "Нет" и отправки данных в фоновом режиме
         function moveNoButton(e) {
             if (e.type === 'touchstart') e.preventDefault();
             noButtonClicks++;
             
-            // Отправляем сигнал о попытке нажатия, БЕЗ вывода сообщений на экран девушки
             fetch(`${API_BASE_URL}/api/track-no`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username: tgUsername, no_clicks: noButtonClicks })
             });
 
-            inviteGif.src = "https://media.giphy.com/media/7SF5scGB2AFr1XPumq/giphy.gif";
+            inviteGif.src = "https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3Z5bW93OTZpY2VwY3A5MXV0eXNndmZ3N3R5bW94ZXg4dW94ZXB6YSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/7SF5scGB2AFr1XPumq/giphy.gif";
             const maxWidth = boxTrap.clientWidth - noBtn.offsetWidth - 15;
             const maxHeight = boxTrap.clientHeight - noBtn.offsetHeight - 15;
             noBtn.style.left = Math.max(10, Math.floor(Math.random() * maxWidth)) + 'px';
@@ -322,11 +311,10 @@
             .then(data => {
                 if (data.success) {
                     if (tg) {
-                        // Финальное прощание Mini App
                         tg.showAlert("Места подтверждены! До встречи в кино, любимая! ❤️🎬");
                         setTimeout(() => tg.close(), 1200);
                     } else {
-                        alert("Успешно! До встречи в кино! ❤️");
+                        alert("Успешно!");
                         location.reload();
                     }
                 }
@@ -335,7 +323,6 @@
     </script>
 </body>
 </html>
-</body>
 </html>
 
 
