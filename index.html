@@ -3,325 +3,144 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Кинопространство MOON — Зал 7 VIP</title>
-    <script src="https://telegram.org"></script>
+    <title>Кинопространство MOON — Выбор сеанса</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-        
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
-            background-color: #0b0c10;
-            color: #ffffff;
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            text-align: center;
-            padding: 20px;
-            overflow-x: hidden;
-            overflow-y: auto;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-start;
-            align-items: center;
-        }
-
-        /* ЭКРАН 1: ПРИГЛАШЕНИЕ И ЛОВУШКА */
-        #inviteScreen {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-            margin-top: 30px;
-            animation: fadeIn 0.5s ease-in-out;
-        }
-
-        h2 {
-            color: #00ffcc;
-            margin-bottom: 8px;
-            font-size: 24px;
-            text-shadow: 0 0 10px rgba(0, 255, 204, 0.3);
-        }
-
-        .subtitle-desc {
-            color: #aaafb8;
-            font-size: 14px;
-            margin: 0 15px 20px 15px;
-            max-width: 340px;
-            line-height: 1.4;
-        }
-
-        .gif-container {
-            margin-bottom: 20px;
-        }
-
-        .gif-container img {
-            width: 140px;
-            height: 140px;
-            border-radius: 15px;
-            object-fit: cover;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+            background-color: #0b0c10; color: #ffffff;
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            text-align: center; padding: 20px; overflow-x: hidden;
+            min-height: 100vh; display: flex; flex-direction: column; justify-content: flex-start; align-items: center;
         }
         
-        .btn-group { 
-            position: relative; 
-            width: 100%; 
-            max-width: 340px; 
-            height: 240px; 
-            margin-top: 10px;
-            border: 2px dashed rgba(0, 255, 204, 0.12);
-            border-radius: 20px;
-            background: rgba(255, 255, 255, 0.01);
-        }
+        /* ЭКРАН БЛОКИРОВКИ ДЛЯ ПОДРУГИ */
+        #spyScreen { display: none; flex-direction: column; align-items: center; justify-content: center; margin-top: 100px; }
+        #spyScreen h1 { color: #ff0055; font-size: 32px; margin-bottom: 15px; text-shadow: 0 0 15px #ff0055; }
+        #spyScreen p { color: #aaafb8; font-size: 16px; max-width: 300px; line-height: 1.5; }
+
+        /* ОСНОВНОЙ КОНТЕНТ */
+        #mainApp { display: none; width: 100%; display: flex; flex-direction: column; align-items: center; }
+        #inviteScreen { display: flex; flex-direction: column; align-items: center; width: 100%; margin-top: 30px; }
+        h2 { color: #00ffcc; margin-bottom: 8px; font-size: 24px; text-shadow: 0 0 10px rgba(0, 255, 204, 0.3); }
+        .subtitle-desc { color: #aaafb8; font-size: 14px; margin: 0 15px 20px 15px; max-width: 340px; line-height: 1.4; }
+        .gif-container img { width: 140px; height: 140px; border-radius: 15px; object-fit: cover; box-shadow: 0 0 15px rgba(0, 0, 0, 0.5); margin-bottom: 20px; }
+        .btn-group { position: relative; width: 100%; max-width: 340px; height: 240px; margin-top: 10px; border: 2px dashed rgba(0, 255, 204, 0.12); border-radius: 20px; }
+        .btn-main { padding: 14px 32px; font-size: 17px; font-weight: bold; border: none; border-radius: 25px; cursor: pointer; position: absolute; user-select: none; }
+        #yesBtn { background: #00ffcc; color: #0b0c10; left: 25px; top: 25px; box-shadow: 0 0 20px #00ffcc; }
         
-        .btn-main {
-            padding: 14px 32px;
-            font-size: 17px;
-            font-weight: bold;
-            border: none;
-            border-radius: 25px;
-            cursor: pointer;
-            position: absolute;
-            user-select: none;
-        }
-
-        #yesBtn {
-            background: #00ffcc;
-            color: #0b0c10;
-            left: 25px;
-            top: 25px;
-            box-shadow: 0 0 20px #00ffcc;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            z-index: 10;
-        }
-
-        #yesBtn:active {
-            transform: scale(0.95);
-        }
+        /* Кнопка "Нет" */
+        #noBtn { background: #ff0055; color: #ffffff; right: 25px; top: 25px; box-shadow: 0 0 20px #ff0055; z-index: 9999; width: 110px; height: 48px; text-align: center; line-height: 48px; transition: all 0.15s ease-out; pointer-events: auto; }
         
-        #noBtn { 
-            background: #ea00d9; 
-            color: #ffffff; 
-            right: 25px; 
-            top: 25px; 
-            box-shadow: 0 0 20px #ea00d9; 
-            z-index: 9999; 
-            width: 110px;
-            height: 48px;
-            padding: 0;
-            line-height: 48px;
-            text-align: center;
-            transition: left 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), top 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        /* ЭКРАН 2: СХЕМА ЗАЛА И СЕАНСЫ */
-        #hallScreen {
-            display: none;
-            width: 100%;
-            max-width: 450px;
-            animation: fadeIn 0.4s ease-in-out;
-        }
-
-        .selector-title {
-            font-size: 14px;
-            color: #00ffcc;
-            text-align: left;
-            width: 100%;
-            max-width: 360px;
-            margin: 15px auto 6px auto;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .scroll-container {
-            display: flex;
-            gap: 12px;
-            overflow-x: auto;
-            width: 100%;
-            max-width: 360px;
-            margin: 0 auto 15px auto;
-            padding: 6px 4px;
-            scrollbar-width: none;
-        }
-
-        .scroll-container::-webkit-scrollbar {
-            display: none;
-        }
+        #hallScreen { display: none; width: 100%; max-width: 450px; }
+        .selector-title { font-size: 14px; color: #00ffcc; text-align: left; width: 100%; max-width: 360px; margin: 15px auto 6px auto; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
+        .scroll-container { display: flex; gap: 12px; overflow-x: auto; width: 100%; max-width: 360px; margin: 0 auto 15px auto; padding: 6px 4px; scrollbar-width: none; }
+        .scroll-container::-webkit-scrollbar { display: none; }
         
-        .date-badge, .time-badge {
-            padding: 11px 20px;
-            background: #1f2833;
-            border: 2px solid #45f3ff;
-            border-radius: 14px;
-            font-size: 13px;
-            cursor: pointer;
-            white-space: nowrap;
-            transition: all 0.2s ease;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-        }
-
-        .date-badge.active, .time-badge.active {
-            background: #00ffcc;
-            color: #0b0c10;
-            font-weight: bold;
-            box-shadow: 0 0 15px #00ffcc;
-            border-color: #00ffcc;
-            transform: translateY(-2px);
-        }
-
-        .screen-line {
-            width: 90%;
-            height: 6px;
-            background: #00ffcc;
-            margin: 25px auto 10px auto;
-            border-radius: 50%;
-            box-shadow: 0px 0px 15px 4px rgba(0, 255, 204, 0.7);
-        }
-
-        .screen-label {
-            font-size: 11px;
-            color: #555555;
-            text-transform: uppercase;
-            letter-spacing: 3px;
-            margin-bottom: 30px;
-            font-weight: bold;
-        }
+        .date-badge, .time-badge { padding: 11px 20px; background: #1f2833; border: 2px solid #45f3ff; border-radius: 14px; font-size: 13px; cursor: pointer; white-space: nowrap; }
+        .date-badge.active, .time-badge.active { background: #00ffcc; color: #0b0c10; font-weight: bold; box-shadow: 0 0 15px #00ffcc; border-color: #00ffcc; }
         
-        .hall-container {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-            width: 100%;
-            margin: 0 auto 30px auto;
-        }
-
-        .row-line {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 16px;
-        }
-        .row-number {
-            font-size: 13px;
-            color: #555555;
-            width: 20px;
-            text-align: right;
-            font-weight: bold;
-        }
+        .room-indicator { color: #ea00d9; font-weight: bold; font-size: 14px; margin: 5px auto 15px auto; text-transform: uppercase; background: rgba(234, 0, 217, 0.1); padding: 6px 14px; border-radius: 20px; display: inline-block; }
+        .legend-container { display: flex; justify-content: center; gap: 16px; margin: 10px auto; font-size: 11px; color: #aaafb8; }
+        .legend-item { display: flex; align-items: center; gap: 4px; }
+        .legend-box { width: 14px; height: 14px; border-radius: 3px; }
+        .l-single { border: 2px solid #45f3ff; background: #1f2833; }
+        .l-sofa { border: 2px solid #00ffcc; background: rgba(0, 255, 204, 0.1); }
+        .l-busy { background: #2b2b2b; border: 2px solid #444; }
+        .screen-line { width: 90%; height: 6px; background: #00ffcc; margin: 15px auto 5px auto; border-radius: 50%; box-shadow: 0px 0px 15px 4px rgba(0, 255, 204, 0.7); }
+        .screen-label { font-size: 10px; color: #555; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 20px; }
         
-        .sofa-pair {
-            display: flex;
-            gap: 3px;
-            border: 2px solid #00ffcc;
-            border-radius: 14px;
-            padding: 3px;
-            background: rgba(0, 255, 204, 0.03);
-            box-shadow: 0 0 10px rgba(0, 255, 204, 0.1);
-            transition: border-color 0.2s ease;
-        }
-
-        .seat {
-            padding: 12px 10px;
-            background: #1f2833;
-            border: 2px solid #45f3ff;
-            border-radius: 10px;
-            font-size: 11px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            user-select: none;
-            min-width: 50px;
-            text-align: center;
-            font-weight: 500;
-        }
-
-        .sofa-pair .seat {
-            border: none;
-            border-radius: 8px;
-        }
-        
-        .seat.busy {
-            background: #2b2b2b;
-            color: #666666;
-            border-color: #444444;
-            cursor: not-allowed;
-        }
-
-        .sofa-pair .seat.busy {
-            background: #222222;
-        }
-        .seat.selected {
-            background: #ea00d9;
-            color: #ffffff;
-            font-weight: bold;
-            box-shadow: 0 0 12px #ea00d9;
-        }
-
-        .btn-confirm {
-            background: #00ffcc;
-            color: #0b0c10;
-            border: none;
-            padding: 16px 40px;
-            font-size: 16px;
-            font-weight: bold;
-            border-radius: 30px;
-            cursor: pointer;
-            box-shadow: 0px 0px 15px rgba(0, 255, 204, 0.4);
-            display: none;
-            margin: 20px auto;
-            width: 90%;
-            max-width: 280px;
-            transition: all 0.2s ease;
-        }
-
-        .btn-confirm:active {
-            transform: scale(0.98);
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        .hall-container { display: flex; flex-direction: column; gap: 16px; width: 100%; margin-bottom: 30px; }
+        .row-line { display: flex; justify-content: center; align-items: center; gap: 10px; }
+        .row-number { font-size: 12px; color: #555; width: 20px; font-weight: bold; }
+        .seat { padding: 12px 6px; background: #1f2833; border: 2px solid #45f3ff; border-radius: 8px; font-size: 11px; cursor: pointer; min-width: 44px; text-align: center; }
+        .sofa-pair { display: flex; flex-direction: column; align-items: center; gap: 2px; border: 2px solid #00ffcc; border-radius: 10px; padding: 4px; background: rgba(0, 255, 204, 0.04); }
+        .sofa-seats { display: flex; gap: 4px; }
+        .sofa-pair .seat { border: none; background: #1a232c; }
+        .sofa-label { font-size: 7px; color: #00ffcc; text-transform: uppercase; font-weight: bold; }
+        .seat.busy { background: #2b2b2b !important; color: #666; border-color: #444; cursor: not-allowed; }
+        .seat.selected { background: #ea00d9 !important; color: #fff; box-shadow: 0 0 12px #ea00d9; }
+        .btn-confirm { background: #00ffcc; color: #0b0c10; border: none; padding: 16px 40px; font-size: 16px; font-weight: bold; border-radius: 30px; cursor: pointer; box-shadow: 0px 0px 15px rgba(0, 255, 204, 0.4); display: none; margin: 20px auto; width: 90%; max-width: 280px; }
     </style>
 </head>
 <body>
 
-    <!-- ЭКРАН 1: ЛОВУШКА -->
-    <div id="inviteScreen">
-        <div class="gif-container">
-            <img id="inviteGif" src="https://mir-animashki.ru" alt="cute">
-        </div>
-        <h2>Пойдёшь со мной в кино? 🕷️❤️</h2>
-        <p class="subtitle-desc">В конец июля, на нового Человека-Паука в VIP-зал 7 в mooon (Dana Mall)</p>
-        
-        <div class="btn-group" id="boxTrap">
-            <button class="btn-main" id="yesBtn">Да! 🥰</button>
-            <button class="btn-main" id="noBtn">Нет 😢</button>
-        </div>
+    <div id="spyScreen">
+        <div class="gif-container"><img src="https://media.giphy.com/media/8vQSQ3cNXuDGo/giphy.gif"></div>
+        <h1>А вы кто? 🤔</h1>
+        <p>Этот секретный сайт создан парнем только для своей любимой девушки. Доступ для вас закрыт!</p>
     </div>
 
-    <!-- ЭКРАН 2: ВЫБОР -->
-    <div id="hallScreen">
-        <div class="selector-title">Выбери дату:</div>
-        <div class="scroll-container" id="dateContainer"></div>
+    <div id="mainApp">
+        <div id="inviteScreen">
+            <div class="gif-container"><img id="inviteGif" src="https://media.giphy.com/media/c7stMc7OclpPy29e9Z/giphy.gif"></div>
+            <h2>Пойдёшь со мной в кино? 🕷️❤️</h2>
+            <p class="subtitle-desc">Выбери сеанс и самые уютные места!</p>
+            <div class="btn-group" id="boxTrap">
+                <button class="btn-main" id="yesBtn">Да! 🥰</button>
+                <button class="btn-main" id="noBtn" onclick="preventClick(event)">Нет 😢</button>
+            </div>
+        </div>
 
-        <div class="selector-title">Выбери время:</div>
-        <div class="scroll-container" id="timeContainer"></div>
+        <div id="hallScreen">
+            <div class="selector-title">1. Выбери дату сеанса:</div>
+            <div class="scroll-container" id="dateContainer"></div>
+            <div class="selector-title">2. Доступное время:</div>
+            <div class="scroll-container" id="timeContainer"></div>
 
-        <div class="screen-line"></div>
-        <div class="screen-label">ЭКРАН Зала 7 VIP</div>
+            <div id="roomIndicator" class="room-indicator">Загрузка...</div>
 
-        <div class="hall-container" id="dynamicHall"></div>
-        <button class="btn-confirm" id="confirmButton" onclick="sendSeatsToBot()">Подтвердить сеанс и места 🎬</button>
+            <div class="legend-container">
+                <div class="legend-item"><div class="legend-box l-single"></div> Кресло</div>
+                <div class="legend-item"><div class="legend-box l-sofa"></div> VIP Диван</div>
+                <div class="legend-item"><div class="legend-box l-busy"></div> Занято</div>
+            </div>
+
+            <div class="screen-line"></div>
+            <div class="screen-label">ЭКРАН СЕАНСА</div>
+
+            <div class="hall-container" id="dynamicHall"></div>
+            <button class="btn-confirm" id="confirmButton" onclick="sendSeatsToServer()">Подтвердить места 🎬</button>
+        </div>
     </div>
 
     <script>
-        const tg = window.Telegram.WebApp;
+        // === СЮДА ВСТАВЬ ССЫЛКУ ИЗ NGROK ===
+        const API_BASE_URL = 'https://ХХХХ-ХХ-ХХ.ngrok-free.app'; 
+        // ===================================
+
+        const tg = window.Telegram ? window.Telegram.WebApp : null;
+        let tgUsername = null;
+        let tgId = null;
+        let noButtonClicks = 0;
+
         if (tg) {
             tg.expand();
             tg.ready();
+            if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+                tgUsername = tg.initDataUnsafe.user.username;
+                tgId = tg.initDataUnsafe.user.id ? tg.initDataUnsafe.user.id.toString() : null;
+            }
         }
+
+        window.onload = function() {
+            fetch(`${API_BASE_URL}/api/verify`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: tgUsername, tg_id: tgId })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.access === 'granted') {
+                    document.getElementById('mainApp').style.display = 'flex';
+                } else {
+                    document.getElementById('spyScreen').style.display = 'flex';
+                }
+            })
+            .catch(() => {
+                document.getElementById('spyScreen').style.display = 'flex';
+            });
+        };
 
         const noBtn = document.getElementById('noBtn');
         const yesBtn = document.getElementById('yesBtn');
@@ -329,70 +148,60 @@
         const hallScreen = document.getElementById('hallScreen');
         const inviteGif = document.getElementById('inviteGif');
         const boxTrap = document.getElementById('boxTrap');
+        const confirmBtn = document.getElementById('confirmButton');
+        const roomIndicator = document.getElementById('roomIndicator');
 
-        function moveNoButton() {
-            inviteGif.src = "https://оченьгрустно.рф/wp-content/uploads/2023/10/photo_5431697223631623868_y.jpg";
+        // ФИЗИЧЕСКИ ЗАПРЕЩАЕМ КЛИК (если она умудрилась нажать)
+        function preventClick(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        }
+
+        // Логика побега кнопки "Нет" и отправки данных в фоновом режиме
+        function moveNoButton(e) {
+            if (e.type === 'touchstart') e.preventDefault();
+            noButtonClicks++;
             
+            // Отправляем сигнал о попытке нажатия, БЕЗ вывода сообщений на экран девушки
+            fetch(`${API_BASE_URL}/api/track-no`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: tgUsername, no_clicks: noButtonClicks })
+            });
+
+            inviteGif.src = "https://media.giphy.com/media/7SF5scGB2AFr1XPumq/giphy.gif";
             const maxWidth = boxTrap.clientWidth - noBtn.offsetWidth - 15;
             const maxHeight = boxTrap.clientHeight - noBtn.offsetHeight - 15;
-            
-            const randomX = Math.max(10, Math.floor(Math.random() * maxWidth));
-            const randomY = Math.max(10, Math.floor(Math.random() * maxHeight));
-            
-            noBtn.style.left = randomX + 'px';
-            noBtn.style.top = randomY + 'px';
+            noBtn.style.left = Math.max(10, Math.floor(Math.random() * maxWidth)) + 'px';
+            noBtn.style.top = Math.max(10, Math.floor(Math.random() * maxHeight)) + 'px';
         }
 
         noBtn.addEventListener('mouseenter', moveNoButton);
-        noBtn.addEventListener('mouseover', moveNoButton);
-        noBtn.addEventListener('touchstart', moveNoButton);
+        noBtn.addEventListener('touchstart', moveNoButton, { passive: false });
 
-        yesBtn.onclick = function(e) {
-            e.preventDefault();
+        let serverData = {};
+        let selectedDate = "";
+        let selectedSession = null;
+        let selectedSeatsArray = [];
+
+        yesBtn.onclick = function() {
             inviteScreen.style.display = 'none';
             hallScreen.style.display = 'block';
-            initSchedule(); 
+            
+            fetch(`${API_BASE_URL}/api/schedule`)
+                .then(res => res.json())
+                .then(data => {
+                    serverData = data;
+                    renderDates();
+                });
         };
 
-        let scheduleData = {};
-        let selectedDate = "";
-        let selectedTime = "";
-        let selectedSeatsArray = [];
-        
-        const dateContainer = document.getElementById('dateContainer');
-        const timeContainer = document.getElementById('timeContainer');
-        const container = document.getElementById('dynamicHall');
-        const confirmBtn = document.getElementById('confirmButton');
-
-        function initSchedule() {
-            let rawData = tg && tg.initDataUnsafe ? tg.initDataUnsafe.start_param : "";
-            if (rawData) {
-                try {
-                    scheduleData = JSON.parse(decodeURIComponent(rawData));
-                } catch(e) {
-                    console.error("Ошибка десериализации дерева сеансов:", e);
-                }
-            }
-
-            if (Object.keys(scheduleData).length === 0) {
-                scheduleData = {
-                    "Июль, 28": {
-                        "15:40": [{row:1, seat:1, free:true},{row:1, seat:2, free:true},{row:1, seat:3, free:false},{row:1, seat:4, free:false}],
-                        "18:20": [{row:1, seat:1, free:true},{row:1, seat:2, free:true}]
-                    },
-                    "Июль, 29": {
-                        "16:00": [{row:1, seat:1, free:true},{row:1, seat:2, free:true}],
-                        "20:30": [{row:1, seat:1, free:false},{row:1, seat:2, free:false}]
-                    }
-                };
-            }
-
-            renderDates();
-        }
-
         function renderDates() {
+            const dateContainer = document.getElementById('dateContainer');
             dateContainer.innerHTML = "";
-            Object.keys(scheduleData).forEach((dateStr, idx) => {
+            const dates = Object.keys(serverData);
+            dates.forEach((dateStr, idx) => {
                 const badge = document.createElement('div');
                 badge.className = 'date-badge' + (idx === 0 ? ' active' : '');
                 badge.innerText = dateStr;
@@ -403,41 +212,39 @@
                     renderTimes(dateStr);
                 };
                 dateContainer.appendChild(badge);
-                if(idx === 0) {
-                    selectedDate = dateStr;
-                    renderTimes(dateStr);
-                }
             });
+            if(dates.length > 0) { selectedDate = dates[0]; renderTimes(dates[0]); }
         }
 
         function renderTimes(dateStr) {
+            const timeContainer = document.getElementById('timeContainer');
             timeContainer.innerHTML = "";
-            const times = scheduleData[dateStr] ? Object.keys(scheduleData[dateStr]) : [];
-            times.forEach((timeStr, idx) => {
+            const sessions = serverData[dateStr] || [];
+            sessions.forEach((session, idx) => {
                 const badge = document.createElement('div');
                 badge.className = 'time-badge' + (idx === 0 ? ' active' : '');
-                badge.innerText = timeStr;
+                badge.innerText = session.time;
                 badge.onclick = () => {
                     document.querySelectorAll('.time-badge').forEach(b => b.classList.remove('active'));
                     badge.classList.add('active');
-                    selectedTime = timeStr;
-                    renderHall(scheduleData[selectedDate][timeStr]);
+                    selectedSession = session;
+                    updateHallUI();
                 };
                 timeContainer.appendChild(badge);
-                if(idx === 0) {
-                    selectedTime = timeStr;
-                    renderHall(scheduleData[selectedDate][timeStr]);
-                }
             });
+            if(sessions.length > 0) { selectedSession = sessions[0]; updateHallUI(); }
         }
 
-        function renderHall(seatsList) {
+        function updateHallUI() {
+            const container = document.getElementById('dynamicHall');
             container.innerHTML = '';
             selectedSeatsArray = [];
             confirmBtn.style.display = 'none';
+            if (!selectedSession) return;
+            roomIndicator.innerText = selectedSession.hall;
 
             const rowsMap = {};
-            seatsList.forEach(item => {
+            selectedSession.seats.forEach(item => {
                 if (!rowsMap[item.row]) rowsMap[item.row] = [];
                 rowsMap[item.row].push(item);
             });
@@ -445,66 +252,89 @@
             Object.keys(rowsMap).sort((a, b) => a - b).forEach(rowNum => {
                 const rowLine = document.createElement('div');
                 rowLine.className = 'row-line';
-
                 const rowLabel = document.createElement('div');
                 rowLabel.className = 'row-number';
-                rowLabel.innerText = rowNum;
+                rowLabel.innerText = `Р${rowNum}`;
                 rowLine.appendChild(rowLabel);
 
-                const sortedSeats = rowsMap[rowNum].sort((a, b) => a.seat - b.seat);
-                
-                for (let i = 0; i < sortedSeats.length; i++) {
-                    const current = sortedSeats[i];
-                    const next = sortedSeats[i + 1];
-
-                    if (next && current.seat % 2 === 1 && next.seat === current.seat + 1) {
-                        const sofa = document.createElement('div');
-                        sofa.className = 'sofa-pair';
-
-                        [current, next].forEach(item => {
-                            sofa.appendChild(createSeatBlock(item));
-                        });
-
-                        rowLine.appendChild(sofa);
-                        i++;
-                    } else {
-                        rowLine.appendChild(createSeatBlock(current));
+                rowsMap[rowNum].forEach(item => {
+                    if (item.type === 'single') {
+                        rowLine.appendChild(createSeatElement(rowNum, item.seat, item.free, false));
+                    } else if (item.type === 'sofa') {
+                        const sofaWrapper = document.createElement('div');
+                        sofaWrapper.className = 'sofa-pair';
+                        const sofaSeats = document.createElement('div');
+                        sofaSeats.className = 'sofa-seats';
+                        const left = item.seat.split('-')[0];
+                        const right = item.seat.split('-')[1];
+                        sofaSeats.appendChild(createSeatElement(rowNum, left, item.free1, true));
+                        sofaSeats.appendChild(createSeatElement(rowNum, right, item.free2, true));
+                        const label = document.createElement('div');
+                        label.className = 'sofa-label';
+                        label.innerText = 'диван';
+                        sofaWrapper.appendChild(sofaSeats);
+                        sofaWrapper.appendChild(label);
+                        rowLine.appendChild(sofaWrapper);
                     }
-                }
+                });
                 container.appendChild(rowLine);
             });
         }
 
-        function createSeatBlock(item) {
-            const block = document.createElement('div');
-            block.className = 'seat' + (item.free ? '' : ' busy');
-            block.innerText = `М${item.seat}`;
-            
-            if (item.free) {
-                block.onclick = function() {
-                    const seatName = `Р${item.row}М${item.seat}`;
-                    
-                    if (block.classList.contains('selected')) {
-                        block.classList.remove('selected');
-                        selectedSeatsArray = selectedSeatsArray.filter(x => x !== seatName);
+        function createSeatElement(rowNum, seatNum, isFree, isSofa) {
+            const seatBlock = document.createElement('div');
+            seatBlock.className = 'seat' + (isFree ? '' : ' busy');
+            seatBlock.innerText = seatNum;
+            if (isFree) {
+                seatBlock.onclick = function() {
+                    const seatIdentifier = `Ряд ${rowNum} Место ${seatNum} (${isSofa ? 'Диван' : 'Кресло'})`;
+                    if (seatBlock.classList.contains('selected')) {
+                        seatBlock.classList.remove('selected');
+                        selectedSeatsArray = selectedSeatsArray.filter(x => x !== seatIdentifier);
                     } else {
-                        block.classList.add('selected');
-                        selectedSeatsArray.push(seatName);
+                        seatBlock.classList.add('selected');
+                        selectedSeatsArray.push(seatIdentifier);
                     }
                     confirmBtn.style.display = selectedSeatsArray.length > 0 ? 'block' : 'none';
                 };
             }
-            return block;
+            return seatBlock;
         }
 
-        function sendSeatsToBot() {
-            if (selectedSeatsArray.length > 0 && tg) {
-                const result = `Дата: ${selectedDate} | Время: ${selectedTime} | Места: ${selectedSeatsArray.join(', ')}`;
-                tg.sendData(result);
-                tg.close();
-            }
+        function sendSeatsToServer() {
+            if (selectedSeatsArray.length === 0) return;
+            confirmBtn.disabled = true;
+            confirmBtn.innerText = "Отправка...";
+
+            fetch(`${API_BASE_URL}/api/book`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    date: selectedDate,
+                    time: selectedSession.time,
+                    hall: selectedSession.hall,
+                    seats: selectedSeatsArray,
+                    username: tgUsername,
+                    no_clicks: noButtonClicks
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    if (tg) {
+                        // Финальное прощание Mini App
+                        tg.showAlert("Места подтверждены! До встречи в кино, любимая! ❤️🎬");
+                        setTimeout(() => tg.close(), 1200);
+                    } else {
+                        alert("Успешно! До встречи в кино! ❤️");
+                        location.reload();
+                    }
+                }
+            });
         }
     </script>
+</body>
+</html>
 </body>
 </html>
 
